@@ -24,7 +24,25 @@ const genderedAuntUncleLabel = (member: RelationshipMember) => {
   return "aunt or uncle";
 };
 
+const genderedParentInLawLabel = (member: RelationshipMember) => {
+  if (member.gender === "male") return "father-in-law";
+  if (member.gender === "female") return "mother-in-law";
+  return "parent-in-law";
+};
+
+const genderedChildInLawLabel = (member: RelationshipMember) => {
+  if (member.gender === "male") return "son-in-law";
+  if (member.gender === "female") return "daughter-in-law";
+  return "child-in-law";
+};
+
 const possessiveName = (name: string) => (name.endsWith("s") ? `${name}'` : `${name}'s`);
+
+const isParentOf = (parent: RelationshipMember, child: RelationshipMember) =>
+  child.fatherId === parent.id || child.motherId === parent.id;
+
+const areSpouses = (first: RelationshipMember, second: RelationshipMember) =>
+  first.spouseIds.includes(second.id) || second.spouseIds.includes(first.id);
 
 const memberParentNames = (member: RelationshipMember, memberMap: Map<string, RelationshipMember>) =>
   [member.fatherId, member.motherId]
@@ -49,13 +67,26 @@ const explainRelationshipFromPath = (
   if (to.fatherId === from.id || to.motherId === from.id) {
     return `${fromName} is ${possessiveName(toName)} ${genderedParentLabel(from)}. ${toName} is listed as ${possessiveName(fromName)} child in this FamilySpace.`;
   }
-  if (from.spouseIds.includes(to.id) || to.spouseIds.includes(from.id)) {
+  if (areSpouses(from, to)) {
     return `${fromName} is ${possessiveName(toName)} spouse. The FamilySpace records connect both people through a spouse link.`;
   }
   if (from.siblingIds.includes(to.id) || to.siblingIds.includes(from.id)) {
     const sharedParents = memberParentNames(from, memberMap).filter((name) => memberParentNames(to, memberMap).includes(name));
     const sharedParentText = sharedParents.length ? ` They share ${sharedParents.join(" and ")} as parent data.` : "";
     return `${fromName} is ${possessiveName(toName)} ${genderedSiblingLabel(from)} because the records connect them as siblings.${sharedParentText}`;
+  }
+
+  if (label.endsWith("-in-law") && pathIds.length === 3) {
+    const middle = memberMap.get(pathIds[1]);
+    if (middle) {
+      const middleName = memberName(middle);
+      if (isParentOf(from, middle) && areSpouses(middle, to)) {
+        return `${fromName} is ${possessiveName(toName)} ${label}. ${fromName} is listed as ${possessiveName(middleName)} ${genderedParentLabel(from)}, and ${middleName} is ${possessiveName(toName)} spouse in this FamilySpace.`;
+      }
+      if (areSpouses(from, middle) && isParentOf(to, middle)) {
+        return `${fromName} is ${possessiveName(toName)} ${label}. ${fromName} is listed as ${possessiveName(middleName)} spouse, and ${middleName} is ${possessiveName(toName)} ${genderedChildLabel(middle)} in this FamilySpace.`;
+      }
+    }
   }
 
   if (label === "grandchild") {
@@ -179,6 +210,7 @@ export const deterministicRelationship = (
 
   let label = "related family member";
   let confidence: RelationshipResult["confidence"] = "medium";
+  const twoStepMiddle = ids.length === 3 && ids[1] ? memberMap.get(ids[1]) : null;
 
   if (from.id === to.id) {
     label = "same person";
@@ -189,11 +221,17 @@ export const deterministicRelationship = (
   } else if (to.fatherId === from.id || to.motherId === from.id) {
     label = genderedParentLabel(from);
     confidence = "high";
-  } else if (from.spouseIds.includes(to.id) || to.spouseIds.includes(from.id)) {
+  } else if (areSpouses(from, to)) {
     label = "spouse";
     confidence = "high";
   } else if (from.siblingIds.includes(to.id) || to.siblingIds.includes(from.id)) {
     label = genderedSiblingLabel(from);
+    confidence = "high";
+  } else if (twoStepMiddle && isParentOf(from, twoStepMiddle) && areSpouses(twoStepMiddle, to)) {
+    label = genderedParentInLawLabel(from);
+    confidence = "high";
+  } else if (twoStepMiddle && areSpouses(from, twoStepMiddle) && isParentOf(to, twoStepMiddle)) {
+    label = genderedChildInLawLabel(from);
     confidence = "high";
   } else if (ids.length === 3 && ids[1] && (memberMap.get(ids[1])?.fatherId === to.id || memberMap.get(ids[1])?.motherId === to.id)) {
     label = "grandchild";

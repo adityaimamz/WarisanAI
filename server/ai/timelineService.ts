@@ -6,6 +6,7 @@ import type {
 } from "./types.js";
 import { memberDisplayName, timelineSortValue } from "./aiHelpers.js";
 import { parseAiTimelineStoryJson } from "./aiJsonParsing.js";
+import { geminiRequest } from "./aiClient.js";
 
 const timelinePrivacyReminder =
   "AI timeline stories stay inside this family space until reviewed.";
@@ -211,9 +212,6 @@ export const maybeAiTimelineStory = async (
   }
 
   const model = process.env.VERTEX_MODEL || "gemini-2.5-flash";
-  const endpoint =
-    process.env.VERTEX_AI_GENERATE_URL ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const compactEvents = events.map((event) => ({
     year: event.year,
     type: event.type,
@@ -247,18 +245,7 @@ export const maybeAiTimelineStory = async (
   });
 
   try {
-    const response = await fetch(`${endpoint}?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.28,
-          maxOutputTokens: 1500,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
+    const response = await geminiRequest(prompt, { temperature: 0.28, maxOutputTokens: 1500 });
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");

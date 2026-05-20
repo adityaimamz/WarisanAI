@@ -30,6 +30,9 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.has(origin)) {
+        if (!origin && process.env.NODE_ENV === "production") {
+          console.warn("[cors] Request without Origin header accepted");
+        }
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

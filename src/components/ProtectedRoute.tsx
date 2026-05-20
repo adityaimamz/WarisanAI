@@ -1,13 +1,24 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Skeleton } from "@syraui/core";
 import { getNeonAuthToken } from "../lib/auth";
 
 type Props = { children: ReactNode };
+const TOKEN_CHECK_INTERVAL_MS = 60_000; // Cek setiap 60 detik
 
 export const ProtectedRoute = ({ children }: Props) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<"loading" | "ok" | "redirect">("loading");
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const checkToken = useCallback(async () => {
+    const token = await getNeonAuthToken({ retries: 1, delayMs: 100 });
+    if (!token) {
+      setStatus("redirect");
+      navigate("/auth/sign-in", { replace: true, state: { from: location } });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,6 +29,14 @@ export const ProtectedRoute = ({ children }: Props) => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (status !== "ok") return;
+    intervalRef.current = setInterval(checkToken, TOKEN_CHECK_INTERVAL_MS);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [status, checkToken]);
 
   if (status === "loading") {
     return (

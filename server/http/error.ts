@@ -16,6 +16,9 @@ export const handleError = (res: Response, error: unknown, message: string) => {
     return;
   }
 
-  console.error(message, error);
+  const safeError = error instanceof Error
+    ? { name: error.name, message: error.message, ...(process.env.NODE_ENV !== "production" ? { stack: error.stack } : {}) }
+    : { message: String(error) };
+  console.error(message, safeError);
   res.status(500).json({ error: message });
 };

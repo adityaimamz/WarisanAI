@@ -550,6 +550,7 @@ export function RelationshipExplainerPanel({
                 key={activeEnvelope.historyId || "result"}
                 envelope={activeEnvelope}
                 variant="on-dark"
+                metaPlacement="bottom"
                 body={
                   isNotFound ? (
                     <div className="flex flex-col gap-3">

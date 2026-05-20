@@ -1,6 +1,7 @@
 import type { BiographyMember, BiographyTone, BiographyGenerationResult, GenerateContentResponse } from "./types.js";
 import { mapBranchName, mapRelationshipToRoot, compactLines, hasText } from "./aiHelpers.js";
 import { parseAiBiographyJson } from "./aiJsonParsing.js";
+import { geminiRequest } from "./aiClient.js";
 
 const biographyPrivacyReminder =
   "AI drafts stay inside this family space until reviewed.";
@@ -103,9 +104,6 @@ export const maybeAiBiography = async (
   }
 
   const model = process.env.VERTEX_MODEL || "gemini-2.5-flash";
-  const endpoint =
-    process.env.VERTEX_AI_GENERATE_URL ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const prompt = [
     "You draft private family biographies for WarisanAI.",
     "Use only the member profile fields and short notes supplied below.",
@@ -130,18 +128,7 @@ export const maybeAiBiography = async (
   });
 
   try {
-    const response = await fetch(`${endpoint}?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.25,
-          maxOutputTokens: 1500,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
+    const response = await geminiRequest(prompt, { temperature: 0.25, maxOutputTokens: 1500 });
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");

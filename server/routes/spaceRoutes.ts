@@ -70,6 +70,15 @@ spaceRoutes.post("/api/spaces", requireAuth, loadAppUser, async (req, res) => {
       return;
     }
 
+    const MAX_SPACES_PER_USER = 2;
+    const existingCount = await prisma.familyMembership.count({
+      where: { userId: req.appUser.id, role: "owner" },
+    });
+    if (existingCount >= MAX_SPACES_PER_USER) {
+      res.status(429).json({ error: `You can own at most ${MAX_SPACES_PER_USER} spaces.` });
+      return;
+    }
+
     const name = asNonEmptyString(req.body?.name);
     if (!name) {
       res.status(400).json({ error: "Space name is required." });
@@ -302,5 +311,3 @@ spaceRoutes.get("/api/spaces/:spaceSlug/bootstrap", ...requireSpaceRead, async (
     handleError(res, error, "Failed to load bootstrap data.");
   }
 });
-
-

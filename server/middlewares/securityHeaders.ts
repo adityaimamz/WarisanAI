@@ -41,7 +41,7 @@ export const securityHeaders: RequestHandler = (req, res, next) => {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
-  res.setHeader("Content-Security-Policy-Report-Only", csp());
+  res.setHeader("Content-Security-Policy", csp());
   if (req.path === "/api" || req.path.startsWith("/api/")) {
     res.setHeader("Cache-Control", "no-store");
   }

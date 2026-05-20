@@ -49,7 +49,7 @@ const getJwks = () => {
 };
 
 export const resetAuthJwksForTests = () => {
-  if (process.env.NODE_ENV !== "test") return;
+  if (process.env.NODE_ENV !== "test" || process.env.ALLOW_TEST_AUTH !== "true") return;
   jwks = null;
   jwksUrl = null;
 };
@@ -128,6 +128,7 @@ const expectedIssuer = () => {
   if (process.env.NODE_ENV === "production") {
     throw new Error("NEON_AUTH_ISSUER is not configured.");
   }
+  console.warn("[auth] NEON_AUTH_ISSUER is not configured — JWT issuer validation is DISABLED. Set it in .env to enable.");
   return undefined;
 };
 
@@ -140,7 +141,7 @@ const expectedAudience = () => {
 };
 
 const getTestUserFromHeaders = async (req: Request): Promise<AuthUser | null> => {
-  if (process.env.NODE_ENV !== "test") return null;
+  if (process.env.NODE_ENV !== "test" || process.env.ALLOW_TEST_AUTH !== "true") return null;
 
   const appUserId = typeof req.headers["x-test-user-id"] === "string" ? req.headers["x-test-user-id"] : null;
   const authUserId =

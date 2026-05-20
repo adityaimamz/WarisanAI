@@ -10,7 +10,13 @@ import { deterministicRelationship } from "../relationship/deterministic.js";
  * @returns true if the cache is still valid, false if stale
  */
 export const isCacheFresh = (
-  cached: { pathMemberIds: string[]; fromMemberId: string; toMemberId: string },
+  cached: {
+    pathMemberIds: string[];
+    fromMemberId: string;
+    toMemberId: string;
+    relationshipLabel?: string | null;
+    explanation?: string | null;
+  },
   relationshipMembers: RelationshipMember[],
 ): boolean => {
   // Build a map of current members by ID
@@ -46,6 +52,16 @@ export const isCacheFresh = (
     if (recomputedIds[i] !== cached.pathMemberIds[i]) {
       return false;
     }
+  }
+
+  const cachedLabel = cached.relationshipLabel?.trim().toLowerCase();
+  const cachedExplanation = cached.explanation?.trim().toLowerCase() ?? "";
+  const cachedUsedGenericWording =
+    cachedLabel === "related family member" ||
+    cachedExplanation.includes("connected as related family member") ||
+    cachedExplanation.includes("connected as a related family member");
+  if (cachedUsedGenericWording && recomputed.relationshipLabel !== "related family member") {
+    return false;
   }
 
   return true;

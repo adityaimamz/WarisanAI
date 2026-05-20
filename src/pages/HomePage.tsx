@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Camera, GitBranch, Users } from "lucide-react";
 import { EmptyState, PageShell, PrimaryButton, SecondaryButton, StatCard, defaultIcons, pageTransition } from "../components/ui";
 import { familyConfig } from "../config";
-import { useFamilyStore } from "../hooks/useFamilyStore";
+import { useSpaceStore } from "../hooks/useSpaceStore";
 
 export const HomePage = () => {
-  const { gallery, members } = useFamilyStore();
+  const { gallery, members } = useSpaceStore();
   const generations = new Set(members.map((member) => member.generation)).size;
   const homeMember = members.find((member) => member.id === familyConfig.site.homeMemberId);
   const coreFamilies = homeMember

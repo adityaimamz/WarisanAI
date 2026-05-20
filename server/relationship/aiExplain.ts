@@ -1,4 +1,5 @@
 import { RelationshipResult } from "./types.js";
+import { geminiRequest } from "../ai/aiClient.js";
 
 type GenerateContentResponse = {
   candidates?: Array<{
@@ -26,6 +27,16 @@ const parseAiJson = (text: string) => {
   }
 };
 
+const isGenericRelationshipAnswer = (relationshipLabel: string, explanation: string) => {
+  const label = relationshipLabel.trim().toLowerCase();
+  const body = explanation.trim().toLowerCase();
+  return (
+    label === "related family member" ||
+    body.includes("connected as related family member") ||
+    body.includes("connected as a related family member")
+  );
+};
+
 export const maybeAiRelationship = async (fallback: RelationshipResult, fromName: string, toName: string) => {
   const apiKey = process.env.VERTEX_API_KEY || process.env.API_KEY;
   if (process.env.AI_EXTERNAL_ENABLED !== "1" || !apiKey) {
@@ -38,13 +49,12 @@ export const maybeAiRelationship = async (fallback: RelationshipResult, fromName
   }
 
   const model = process.env.VERTEX_MODEL || "gemini-2.5-flash";
-  const endpoint =
-    process.env.VERTEX_AI_GENERATE_URL ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const prompt = [
     "You explain family relationships for a private family archive.",
     "Use only the supplied deterministic relationship result.",
     "Explain why the relationship exists using the supplied path. Do not invent people, dates, or family data.",
+    "Keep a specific deterministic relationshipLabel when one is supplied; do not replace mother-in-law, daughter-in-law, cousin, grandparent, or similar labels with 'related family member'.",
+    "If the deterministic path is parent -> child -> spouse, state the exact in-law relationship in the first sentence.",
     "Keep the privacy cue: This explanation only uses data inside this FamilySpace.",
     "Return compact JSON with keys: relationshipLabel, explanation, confidence, fallbackNote.",
     `Person A: ${fromName}`,
@@ -62,18 +72,7 @@ export const maybeAiRelationship = async (fallback: RelationshipResult, fromName
   });
 
   try {
-    const response = await fetch(`${endpoint}?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 420,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
+    const response = await geminiRequest(prompt, { temperature: 0.2, maxOutputTokens: 420 });
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");
@@ -100,18 +99,33 @@ export const maybeAiRelationship = async (fallback: RelationshipResult, fromName
       }, "warn");
       return fallback;
     }
+    const relationshipLabel = String(parsed.relationshipLabel);
+    const explanation = String(parsed.explanation);
+    if (
+      fallback.relationshipLabel !== "related family member" &&
+      isGenericRelationshipAnswer(relationshipLabel, explanation)
+    ) {
+      aiLog("relationship_llm_generic_specific_fallback", {
+        feature: "relationship",
+        model,
+        durationMs: Date.now() - startedAt,
+        fallbackLabel: fallback.relationshipLabel,
+        fallback: true,
+      }, "warn");
+      return fallback;
+    }
 
     aiLog("relationship_llm_success", {
       feature: "relationship",
       model,
       durationMs: Date.now() - startedAt,
-      explanationLength: String(parsed.explanation).length,
+      explanationLength: explanation.length,
       source: "ai",
     });
     return {
       ...fallback,
-      relationshipLabel: String(parsed.relationshipLabel),
-      explanation: String(parsed.explanation),
+      relationshipLabel,
+      explanation,
       confidence: parsed.confidence === "high" || parsed.confidence === "medium" || parsed.confidence === "low"
         ? parsed.confidence
         : fallback.confidence,

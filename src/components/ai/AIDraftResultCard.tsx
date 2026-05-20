@@ -26,6 +26,7 @@ export interface AIDraftResultCardProps {
    */
   afterBody?: ReactNode;
   variant?: "on-dark" | "on-surface";
+  metaPlacement?: "top" | "bottom";
 }
 
 const readableBodyStyles: Record<"on-dark" | "on-surface", string> = {
@@ -74,9 +75,11 @@ export function AIDraftResultCard({
   actions,
   afterBody,
   variant = "on-surface",
+  metaPlacement = "top",
 }: AIDraftResultCardProps) {
   const resolvedBody =
     body ?? <ReadableBody text={envelope.body} variant={variant} />;
+  const meta = <AIDraftMeta envelope={envelope} variant={variant} />;
 
   return (
     <motion.section
@@ -89,7 +92,7 @@ export function AIDraftResultCard({
       data-testid="ai-draft-result-card"
       data-ai-mode={mode}
     >
-      <AIDraftMeta envelope={envelope} variant={variant} />
+      {metaPlacement === "top" && meta}
 
       <div className="flex flex-col gap-4">
         {resolvedBody}
@@ -128,7 +131,9 @@ export function AIDraftResultCard({
         </div>
       )}
 
-      <AIReviewChecklist envelope={envelope} variant={variant} />
+      {/* <AIReviewChecklist envelope={envelope} variant={variant} /> */}
+
+      {metaPlacement === "bottom" && meta}
 
       {actions && (
         <div className="flex flex-wrap gap-2 pt-1 sm:pt-0">{actions}</div>
