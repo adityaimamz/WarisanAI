@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { iconStroke } from "../ui";
 import { AIDraftMeta } from "./AIDraftMeta";
 import { AIGeneratedFromChips } from "./AIGeneratedFromChips";
-import { AIReviewChecklist } from "./AIReviewChecklist";
 import type { AIDraftEnvelope } from "./AIDraftEnvelope";
 
 export type AIDraftResultMode = "reading" | "editing";
@@ -46,8 +45,8 @@ export function ReadableBody({
   text,
   variant = "on-surface",
 }: {
-  text: string;
-  variant?: "on-dark" | "on-surface";
+  readonly text: string;
+  readonly variant?: "on-dark" | "on-surface";
 }) {
   const paragraphs = text
     .split(/\n{2,}/)
@@ -76,7 +75,7 @@ export function AIDraftResultCard({
   afterBody,
   variant = "on-surface",
   metaPlacement = "top",
-}: AIDraftResultCardProps) {
+}: Readonly<AIDraftResultCardProps>) {
   const resolvedBody =
     body ?? <ReadableBody text={envelope.body} variant={variant} />;
   const meta = <AIDraftMeta envelope={envelope} variant={variant} />;
