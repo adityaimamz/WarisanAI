@@ -10,6 +10,9 @@
 The project started from a simple family tree application and has evolved into a production-ready open-source platform: featuring a public landing page, authenticated FamilySpace app, role-based editing, invite-based onboarding, a platform operator console, PostgreSQL database backed by Prisma, image optimization upload endpoints, and AI-assisted archive drafting.
 
 > 🌐 **Live Demo:** [https://warisan-ai-558467708906.asia-southeast2.run.app/](https://warisan-ai-558467708906.asia-southeast2.run.app/)  
+> * **Demo Account Email:** `demo@warisan.ai`
+> * **Demo Account Password:** `demo12345`
+> 
 > *Public visitors see the landing page at `/`. Authenticated users manage private family archives inside `/app/:spaceSlug/*`.*
 
 ## Open-Source Template & Platform
