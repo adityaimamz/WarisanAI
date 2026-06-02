@@ -1,10 +1,23 @@
 # WarisanAI FamilySpace Archive
 
-WarisanAI is a full-stack, privacy-first family archive for preserving relationships, stories, photos, timelines, and family memories inside private `FamilySpace` workspaces.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Contributing](https://img.shields.io/badge/Contributing-Welcome-blue.svg)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-Contributor%20Covenant-green.svg)](CODE_OF_CONDUCT.md)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg)](https://warisan-ai-558467708906.asia-southeast2.run.app/)
 
-The project started from a family tree application and has evolved into a SaaS-lite prototype: a public landing page, authenticated FamilySpace app, role-based editing, invite-based onboarding, platform operator console, PostgreSQL-backed family records, uploads, and AI-assisted archive drafting.
+**WarisanAI** is a full-stack, privacy-first **open-source template and platform** for family archives. This project is designed to be easily forked, customized, and self-hosted by any family or community to preserve family trees, relationships, stories, photos, timelines, and memories within private `FamilySpace` workspaces.
 
-> Public visitors see the landing page at `/`. Authenticated users manage private family archives inside `/app/:spaceSlug/*`.
+The project started from a simple family tree application and has evolved into a production-ready open-source platform: featuring a public landing page, authenticated FamilySpace app, role-based editing, invite-based onboarding, a platform operator console, PostgreSQL database backed by Prisma, image optimization upload endpoints, and AI-assisted archive drafting.
+
+> 🌐 **Live Demo:** [https://warisan-ai-558467708906.asia-southeast2.run.app/](https://warisan-ai-558467708906.asia-southeast2.run.app/)  
+> *Public visitors see the landing page at `/`. Authenticated users manage private family archives inside `/app/:spaceSlug/*`.*
+
+## Open-Source Template & Platform
+
+Unlike a typical single-user personal app, WarisanAI is built with a multi-tenant architecture scoped around individual family workspaces (`FamilySpace`). This means you can:
+1. **Self-Host**: Deploy your own instance for your extended family using Docker on any cloud provider (Google Cloud Run, AWS, etc.).
+2. **Template Customization**: Customize the UI, AI logic, or database schema for your specific family history requirements.
+3. **Public/Private Platform**: Run it as a SaaS-lite platform for your local community or genealogy group, leveraging the built-in platform admin panel.
 
 ## Product Positioning
 
@@ -742,8 +755,236 @@ If the console shows `ERR_BLOCKED_BY_CLIENT` for `/_vercel/insights/script.js`, 
 WarisanAI is a demo-ready full-stack prototype moving from a family tree into a private family archive product. The current focus is polishing the app for a judging/demo flow:
 
 1. Public landing page explains the family memory preservation problem with animated sections.
+    platformRoutes.ts    # Platform admin endpoints
+    shared.ts            # Shared route utilities (mappers, validators, pagination)
+    sourceNoteRoutes.ts  # Source note CRUD
+    spaceRoutes.ts       # Space CRUD + bootstrap + summary
+    storyRoutes.ts       # Story CRUD (paginated)
+    timelineRoutes.ts    # Timeline CRUD
+    uploadRoutes.ts      # Photo and avatar upload endpoints
+
+src/
+  App.tsx                # Root component with routing
+  main.tsx               # React entry point
+  index.css              # Global styles
+  components/
+    ai/                  # AI feature components (biography studio, relationship explainer, timeline story)
+    dashboard/           # Dashboard stat cards
+    forms/               # Form modals (member, gallery, timeline, relationship selector)
+    tree/                # Tree visualization (canvas, minimap, controls, branch filter, focus search)
+    ui/                  # Shared UI components (modal, photo upload)
+    FamilyTree.tsx       # Legacy tree component
+    GalleryTimeline.tsx  # Gallery timeline view
+    Layout.tsx           # Navbar + Footer
+    MemberDetail.tsx     # Member detail view
+    MemberForm.tsx       # Member form
+    Navbar.tsx           # App navbar
+    ProtectedRoute.tsx   # Auth guard component
+  config/
+    index.ts             # App configuration
+    defaultLabels.ts     # Default UI labels
+  constants/
+    treeLayout.ts        # Tree layout constants
+  hooks/
+    useAIBiographyStudio.ts  # AI biography studio hook
+    useAIDraft.ts            # Generic AI draft hook
+    useAIStudioDeepLink.ts   # AI studio deep link navigation
+    useCanvasGestures.ts     # Canvas touch/mouse gestures
+    useCanvasPanZoom.ts      # Canvas pan and zoom state
+    useFamilyStore.tsx       # Legacy family store
+    useRoleGate.ts           # Role-based UI gating
+    useSiteConfigEffects.ts  # Site config side effects
+    useSpaceStore.tsx        # Space-scoped state management
+    useTreeFocus.ts          # Tree focus/search state
+  landing/
+    lib/
+      data/              # Landing page data
+      animationVariants.ts # Shared animation variants
+    sections/            # Landing page sections (Hero, Problem, FamilySpace, etc.)
+  layouts/
+    PlatformLayout.tsx   # Platform console layout
+    SpaceLayout.tsx      # FamilySpace app layout
+  lib/
+    api.ts               # API client utilities
+    auth.ts              # Auth utilities
+    authErrorBus.ts      # Auth error event bus
+    signOut.ts           # Sign-out logic
+  pages/
+    AuthPage.tsx
+    GalleryPage.tsx
+    HomePage.tsx
+    JoinSpacePage.tsx     # Invite join flow
+    LandingPage.tsx
+    MemberProfilePage.tsx
+    MembersPage.tsx
+    SpaceDashboard.tsx
+    spaceDashboard.derive.ts # Dashboard derived state
+    SpaceListPage.tsx
+    SpaceSettingsPage.tsx
+    StoriesPage.tsx
+    TimelinePage.tsx
+    TreePage.tsx
+    platform/            # Platform admin pages
+    settings/            # Space settings sub-sections
+  types/
+    config.ts            # Config type definitions
+    family.ts            # Family data types
+    tree.ts              # Tree visualization types
+  utils/
+    family.ts            # Family data utilities
+    spaceDisplay.ts      # Space display helpers
+    timeline.ts          # Timeline utilities
+    treeLayout.ts        # Tree layout calculations
+
+scripts/
+  promote-admin.ts       # CLI script to promote a user to platform_admin
+```
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Run frontend and backend together (via concurrently) |
+| `npm run dev:frontend` | Run Vite only (`--host 127.0.0.1`) |
+| `npm run dev:backend` | Run Express only with `.env` via tsx |
+| `npm run build` | Generate Prisma Client, type-check frontend/server, and build Vite assets |
+| `npm run start` | Run the production Express server |
+| `npm run preview` | Preview the production Vite build |
+| `npm run db:seed` | Seed demo FamilySpace data |
+| `npm run test` | Run Vitest (watch mode) |
+| `npm run test:run` | Run Vitest once |
+
+## Verification Checklist
+
+Local checks:
+
+```bash
+npx prisma validate
+npm run build
+npm run test:run
+```
+
+Full local database verification:
+
+```bash
+npx prisma migrate reset --force
+npm run db:seed
+npm run build
+npm run start
+```
+
+Manual verification targets:
+
+- `/api/health`
+- `/`
+- `/auth/sign-in`
+- `/app`
+- `/join`
+- `/app/:spaceSlug`
+- `/app/:spaceSlug/tree`
+- `/app/:spaceSlug/members`
+- `/app/:spaceSlug/members/:memberId`
+- `/app/:spaceSlug/timeline`
+- `/app/:spaceSlug/gallery`
+- `/app/:spaceSlug/stories`
+- `/app/:spaceSlug/settings`
+- `/platform`
+- old global API endpoints returning `410 Gone`
+
+Production auth checks:
+
+- Browser console should not show `VITE_NEON_AUTH_URL is not configured`.
+- Login requests should go to the configured Neon Auth host, not `localhost`.
+- Neon Auth should not return `Invalid origin`; if it does, add the Cloud Run origin to Neon Auth allowed origins.
+
+## Troubleshooting
+
+### `VITE_NEON_AUTH_URL is not configured`
+
+The frontend was likely built without the Vite env variable.
+
+Fix:
+
+- Ensure Dockerfile has `ARG VITE_NEON_AUTH_URL` before `RUN npm run build`.
+- Ensure Cloud Build passes `--build-arg VITE_NEON_AUTH_URL=${_VITE_NEON_AUTH_URL}`.
+- Ensure Cloud Build trigger has `_VITE_NEON_AUTH_URL` filled.
+- Rebuild and redeploy a new Cloud Run revision.
+
+### Neon Auth returns `403 Forbidden` / `Invalid origin`
+
+The Cloud Run URL is not allowed in Neon Auth settings.
+
+Fix:
+
+- Add `https://your-cloud-run-service-url.run.app` to Neon Auth allowed origins.
+- Add local origins for development if needed.
+
+### Cloud Build fails before steps run with logging error
+
+If a custom service account is used, Cloud Build needs an explicit logging option.
+
+Fix:
+
+```yaml
+options:
+  logging: CLOUD_LOGGING_ONLY
+```
+
+### Vercel Analytics script is blocked
+
+If the console shows `ERR_BLOCKED_BY_CLIENT` for `/_vercel/insights/script.js`, it is usually caused by a browser extension/ad blocker. It does not block WarisanAI auth or core app behavior.
+
+## Privacy and Security Notes
+
+- FamilySpace data is scoped by membership and role checks.
+- Platform admin access is separate from FamilySpace membership.
+- AI generation should use only supplied family records and notes.
+- AI drafts should be treated as reviewable drafts, not final family history.
+- Do not store production secrets in GitHub.
+- Rotate secrets if they are exposed in screenshots, logs, or commits.
+- Rate limiting is applied to API routes via `express-rate-limit`.
+- Security headers are applied via custom middleware.
+
+## Current Status
+
+WarisanAI is a demo-ready full-stack prototype moving from a family tree into a private family archive product. The current focus is polishing the app for a judging/demo flow:
+
+1. Public landing page explains the family memory preservation problem with animated sections.
 2. Authenticated FamilySpace proves the product works with measurable archive progress.
 3. Tree, members, timeline, gallery, stories, and AI-assisted routes demonstrate real product value.
 4. Invite-based onboarding allows families to grow their archive collaboratively.
 5. Space settings with membership management, profile customization, and invite administration.
 6. Platform console shows SaaS-lite operational readiness without exposing private family archive contents.
+
+## Roadmap
+
+Here is the future development roadmap for WarisanAI:
+
+### Phase 1: Foundation & Collaboration (Current)
+- [x] Interactive Family Tree & Relationship Management (Pan/Zoom Canvas, Minimap)
+- [x] AI Assistant (Biography Drafting, Milestone Story Generation, Relationship Path Finding)
+- [x] Workspace-scoped Timeline Events & Photo Gallery
+- [x] Code-based Collaboration Invite System
+- [x] Platform Operator Console for SaaS-lite monitoring
+
+### Phase 2: Privacy Hardening & Core Standards (Next)
+- [ ] Support for industry-standard genealogy exchange format (**GEDCOM import/export**)
+- [ ] Optional end-to-end encryption (E2EE) for sensitive documents/images
+- [ ] Third-party Single Sign-On (SSO) integration (Google, Apple, Microsoft)
+- [ ] Interactive PDF archive export features for printing
+
+### Phase 3: Mobile Experience & Offline First
+- [ ] Progressive Web App (PWA) with offline caching support
+- [ ] Native mobile application using React Native / Expo
+- [ ] Offline-first synchronization for unstable internet connections
+- [ ] Multi-language support (i18n) for both public landing page and application workspaces
+
+## Contributing
+
+We welcome contributions of all kinds! If you would like to report a bug, request a feature, or improve the documentation, please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide.
+
+Please also read and adhere to our community standards outlined in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.

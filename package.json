@@ -1,8 +1,24 @@
 {
   "name": "warisan-ai",
   "version": "1.0.0",
-  "private": true,
+  "description": "Full-stack, privacy-first family archive template & platform to preserve relationships, stories, and memories.",
+  "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adityaimamz/WarisanAI.git"
+  },
+  "keywords": [
+    "family-tree",
+    "family-archive",
+    "open-source-template",
+    "genealogy",
+    "ai-biography",
+    "react",
+    "prisma",
+    "express"
+  ],
+  "homepage": "https://warisan-ai-558467708906.asia-southeast2.run.app/",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "vite --host 127.0.0.1",
